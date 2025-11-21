@@ -1,0 +1,1423 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma de Comprensión Lectora</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      height: 100%;
+      overflow-x: hidden;
+      background-color: #f0f9ff; 
+      color: #1e293b;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .container {
+      min-height: 100%;
+      padding: 32px 24px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      opacity: 0.85;
+    }
+
+    .progress-section {
+      margin-bottom: 32px;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background-color: #ffffff; 
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .progress-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .timer-display {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ef4444; /* Rojo para el tiempo */
+        padding: 4px 8px;
+        border-radius: 6px;
+        background-color: rgba(239, 68, 68, 0.1);
+    }
+
+    .progress-stats {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .progress-bar-container {
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.5s ease;
+      background-color: #3b82f6; 
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-section {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 40px 32px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        background-color: #ffffff;
+        text-align: center;
+    }
+
+    .login-section input {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+
+    .reading-section {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .reading-panel {
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+      background-color: #ffffff; 
+    }
+
+    .panel-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .reading-text {
+      font-size: 16px;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .reading-text p {
+      margin-bottom: 16px;
+    }
+
+    .question-section {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .question-card {
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 24px;
+      background-color: #ffffff; 
+    }
+
+    .question-number {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      opacity: 0.7;
+      text-align: center;
+    }
+
+    .question-text {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 28px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .options-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .options-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .option-button {
+      padding: 20px;
+      border: 2px solid #64748b; 
+      border-radius: 10px;
+      font-size: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 500;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #ffffff;
+      color: #1e293b;
+    }
+
+    .option-button:hover:not(:disabled) {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .option-button.selected {
+      font-weight: 600;
+      transform: scale(1.02);
+    }
+
+    .option-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .feedback-message {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      display: none;
+      text-align: center;
+    }
+
+    .feedback-message.show {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feedback-message.correct {
+      background: rgba(16, 185, 129, 0.15);
+      color: #065f46;
+    }
+
+    .feedback-message.incorrect {
+      background: rgba(239, 68, 68, 0.15);
+      color: #991b1b;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+    }
+
+    .nav-button {
+      padding: 14px 32px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background-color: #3b82f6; 
+      color: #ffffff;
+    }
+
+    .nav-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .nav-button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .nav-button.secondary {
+      border: 2px solid #64748b; 
+      background-color: #ffffff;
+      color: #64748b;
+    }
+
+    .synonym-word {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .results-summary {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background-color: #ffffff; 
+    }
+
+    .results-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+
+    .results-score {
+      font-size: 56px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+    
+    /* Estilo para los porcentajes individuales */
+    .section-score {
+        font-size: 28px;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .results-breakdown {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+
+    .result-item {
+      text-align: center;
+    }
+
+    .result-item-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-item-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.7;
+    }
+
+    .results-message {
+      font-size: 17px;
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .reset-button {
+      padding: 14px 40px;
+      border: 2px solid;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .reset-button:hover {
+      transform: scale(1.05);
+    }
+
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .section-title {
+      font-size: 26px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container" id="mainContainer">
+   <div class="header">
+    <h1 class="title" id="platformTitle">Plataforma de Comprensión Lectora</h1>
+    <p class="subtitle" id="welcomeMessage">Ingresa tus datos para comenzar la prueba</p>
+   </div>
+   <div class="progress-section" id="progressSection" style="display: none;">
+    <div class="progress-header">
+        <div class="progress-info">
+            <span class="progress-label">Tu Progreso</span> 
+            <span class="progress-stats" id="progressStats">0 de 15 completadas</span>
+        </div>
+        <div class="timer-display" id="timerDisplay">06:30</div>
+    </div>
+    <div class="progress-bar-container" id="progressBarContainer">
+     <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+    </div>
+   </div><div class="section active login-section" id="loginSection">
+    <h2 class="section-title">Inicio de Evaluación</h2>
+    <input type="text" id="inputName" placeholder="Nombre Completo" required>
+    <input type="text" id="inputDNI" placeholder="DNI o Identificación" required>
+    <div class="button-group">
+        <button class="nav-button" id="startLoginButton" disabled>Iniciar Sesión</button>
+    </div>
+   </div><div class="section reading-section" id="readingSection">
+    <div class="reading-panel" id="readingPanel">
+     <h2 class="panel-title" id="readingTitle">El Misterio del Monolito Azul</h2>
+     <div class="reading-text">
+      <p>La Dra. Elara Vance, una arqueóloga reconocida por su **perspicacia**, llegó al remoto valle de Shima. La leyenda local hablaba de un objeto imposible: un monolito de zafiro de diez metros que había estado allí por milenios, desafiando toda explicación geológica.</p>
+      <p>Elara había logrado **designar** esta expedición después de años de **petulancia** por parte de sus colegas, quienes consideraban la historia local una mera fantasía. Tras un agotador viaje, el monolito estaba ante ella. Era **semejante** a una columna de cristal líquido, y emitía un suave pulso luminoso. Era un descubrimiento **fortuito**.</p>
+      <p>Un equipo de investigación intentó **ascender** la estructura para instalar sensores, pero la superficie parecía **sosegar** cualquier intento de agarre. Elara sugirió que la escalada era innecesaria, ya que la respuesta debía ser **factible** por métodos no invasivos. Propuso utilizar un radar de penetración que acababa de **adquirir**.</p>
+      <p>La noche antes de la prueba, un grupo de ancianos locales se acercó al campamento en señal de **protesta**, argumentando que el monolito debía quedar intacto. Tuvieron que **aplazar** la prueba hasta la mañana. Elara, siendo **dadivosa** con sus recursos, les prometió restaurar el área circundante a su estado original, asegurándoles que el respeto por su cultura era primordial.</p>
+     </div>
+    </div>
+    <div class="button-group"><button class="nav-button" id="startButton">Comenzar Evaluación</button>
+    </div>
+   </div><div class="section question-section" id="comprehensionSection"></div><div class="section" id="synonymsIntro">
+    <div class="reading-panel">
+     <h2 class="section-title" id="synonymsSectionTitle">Evaluación de Sinónimos</h2>
+     <p style="text-align: center; font-size: 17px; line-height: 1.8; margin-bottom: 24px;">A continuación, se te presentarán palabras generales. Tu tarea es identificar el sinónimo correcto para cada una. ¡Demuestra tu vocabulario!</p>
+     <div class="button-group"><button class="nav-button" id="startSynonymsButton">Comenzar</button>
+     </div>
+    </div>
+   </div><div class="section question-section" id="synonymsSection"></div><div class="section" id="resultsSection">
+    <div class="results-summary" id="resultsSummary">
+     <h3 class="results-title">¡Evaluación Completada!</h3>
+     <div class="results-score" id="resultsScore">
+      0%
+     </div>
+     <div class="results-breakdown">
+      <div class="result-item">
+       <div class="result-item-value" id="comprehensionScore">
+        0/5
+       </div>
+       <div class="result-item-label">
+        Comprensión
+       </div>
+      </div>
+      <div class="result-item">
+       <div class="result-item-value" id="synonymsScore">
+        0/10
+       </div>
+       <div class="result-item-label">
+        Sinónimos
+       </div>
+      </div>
+     </div>
+     <p class="results-message" id="resultsMessage"></p>
+     <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;"><button class="reset-button" id="downloadButton" style="background-color: #10b981; color: white; border: none;">📥 Descargar Excel</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    // --- DEFINICIONES DE CONFIGURACIÓN Y DATOS (CONSTANTES) ---
+    const defaultConfig = {
+      background_color: "#f0f9ff",
+      surface_color: "#ffffff",
+      text_color: "#1e293b",
+      primary_action_color: "#3b82f6",
+      secondary_action_color: "#64748b",
+      font_family: "Segoe UI",
+      font_size: 16,
+      platform_title: "Plataforma de Comprensión Lectora",
+      welcome_message: "Ingresa tus datos para comenzar la prueba",
+      reading_title: "El Misterio del Monolito Azul",
+      synonyms_section_title: "Evaluación de Sinónimos",
+      button_text: "Siguiente"
+    };
+
+    const comprehensionQuestions = [
+      {
+        id: "comp-q1",
+        text: "¿Cuál es la profesión de la Dra. Elara Vance en la historia?",
+        options: ["Geóloga", "Astrónoma", "Arqueóloga", "Historiadora"],
+        correctAnswer: "Arqueóloga"
+      },
+      {
+        id: "comp-q2",
+        text: "¿Qué material es el monolito que descubre Elara?",
+        options: ["Granito rojo", "Zafiro", "Obsidiana negra", "Cristal líquido"],
+        correctAnswer: "Zafiro"
+      },
+      {
+        id: "comp-q3",
+        text: "¿Qué método propuso Elara para estudiar el monolito sin dañarlo?",
+        options: ["Escalar la estructura", "Utilizar un sismógrafo", "Usar radar de penetración", "Consultar la leyenda local"],
+        correctAnswer: "Usar radar de penetración"
+      },
+      {
+        id: "comp-q4",
+        text: "¿Cuál fue el motivo de la protesta de los ancianos locales?",
+        options: ["Querían un pago por el hallazgo", "Argumentaban que el monolito debía quedar intacto", "Pedían que la Dra. Vance se fuera del valle", "Exigían participar en la escalada"],
+        correctAnswer: "Argumentaban que el monolito debía quedar intacto"
+      },
+      {
+        id: "comp-q5",
+        text: "¿Qué prometió la Dra. Vance a los ancianos para calmarlos?",
+        options: ["Compartir las ganancias del hallazgo", "Retirarse permanentemente del valle", "Restaurar el área circundante a su estado original", "Avanzar con la prueba sin demoras"],
+        correctAnswer: "Restaurar el área circundante a su estado original"
+      }
+    ];
+
+    // Sinónimos Generales (10 preguntas)
+    const synonymQuestions = [
+      {
+        id: "syn-q1",
+        word: "SEMEJANTE",
+        text: "¿Cuál es el sinónimo de la palabra SEMEJANTE?",
+        options: ["Opuesto", "Parecido", "Distinto", "Disperso"],
+        correctAnswer: "Parecido"
+      },
+      {
+        id: "syn-q2",
+        word: "FACTIBLE",
+        text: "¿Cuál es el sinónimo de la palabra FACTIBLE?",
+        options: ["Imposible", "Irrealizable", "Viable", "Dudoso"],
+        correctAnswer: "Viable"
+      },
+      {
+        id: "syn-q3",
+        word: "DADIVOSO",
+        text: "¿Cuál es el sinónimo de la palabra DADIVOSO?",
+        options: ["Avaro", "Egoísta", "Generoso", "Tacaño"],
+        correctAnswer: "Generoso"
+      },
+      {
+        id: "syn-q4",
+        word: "PROTESTA",
+        text: "¿Cuál es el sinónimo de la palabra PROTESTA?",
+        options: ["Conformidad", "Reclamo", "Aceptación", "Acuerdo"],
+        correctAnswer: "Reclamo"
+      },
+      {
+        id: "syn-q5",
+        word: "ASCENDER",
+        text: "¿Cuál es el sinónimo de la palabra ASCENDER?",
+        options: ["Bajar", "Descender", "Subir", "Estancar"],
+        correctAnswer: "Subir"
+      },
+      {
+        id: "syn-q6",
+        word: "SOSEGAR",
+        text: "¿Cuál es el sinónimo de la palabra SOSEGAR?",
+        options: ["Excitar", "Agitar", "Calmar", "Perturbar"],
+        correctAnswer: "Calmar"
+      },
+      {
+        id: "syn-q7",
+        word: "FORTUITO",
+        text: "¿Cuál es el sinónimo de la palabra FORTUITO?",
+        options: ["Planeado", "Accidental", "Intencional", "Deliberado"],
+        correctAnswer: "Accidental"
+      },
+      {
+        id: "syn-q8",
+        word: "DESIGNAR",
+        text: "¿Cuál es el sinónimo de la palabra DESIGNAR?",
+        options: ["Omitir", "Nombrar", "Ignorar", "Excluir"],
+        correctAnswer: "Nombrar"
+      },
+      {
+        id: "syn-q9",
+        word: "APLAZAR",
+        text: "¿Cuál es el sinónimo de la palabra APLAZAR?",
+        options: ["Adelantar", "Posponer", "Apresurar", "Realizar"],
+        correctAnswer: "Posponer"
+      },
+      {
+        id: "syn-q10",
+        word: "PETULANCIA",
+        text: "¿Cuál es el sinónimo de la palabra PETULANCIA?",
+        options: ["Modestia", "Sencillez", "Arrogancia", "Humildad"],
+        correctAnswer: "Arrogancia"
+      }
+    ];
+
+    let currentQuestionIndex = 0;
+    let currentSection = 'login';
+    let userAnswers = {};
+    let recordCount = 0;
+    let hasCompletedQuiz = false; 
+    
+    // Variables globales para datos del usuario
+    let userName = ''; 
+    let userDNI = '';
+
+    const CSV_DELIMITER = ';'; 
+    
+    // Variables para el temporizador
+    const READING_TIME_SECONDS = 120; // 2:00 minutos
+    const EVALUATION_TIME_SECONDS = 5 * 60; // 5 minutos
+    const TOTAL_TIME_SECONDS = READING_TIME_SECONDS + EVALUATION_TIME_SECONDS; // 6:30 minutos
+    
+    let timer;
+    let timeLeft = TOTAL_TIME_SECONDS;
+    let timeStarted = null; // Marca de tiempo cuando se inicia el timer
+
+    const dataHandler = {
+      onDataChanged(data) {
+        recordCount = data.length;
+      }
+    };
+
+    // --- FUNCIONES DE UTILIDAD ---
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+    
+    /**
+     * Formatea segundos a MM:SS.
+     */
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        const minutesDisplay = minutes < 10 ? '0' + minutes : minutes;
+        const secondsDisplay = secs < 10 ? '0' + secs : secs;
+        return `${minutesDisplay}:${secondsDisplay}`;
+    }
+
+    /**
+     * Inicia el temporizador.
+     */
+    function startTimer() {
+        if (timer) {
+            clearInterval(timer);
+        }
+        
+        timeStarted = Date.now();
+        const timerDisplay = document.getElementById('timerDisplay');
+        
+        timer = setInterval(() => {
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                timerDisplay.textContent = "00:00";
+                alert("¡Tiempo agotado! La evaluación ha finalizado automáticamente.");
+                showResults(true); 
+                return;
+            }
+            
+            timeLeft--;
+            timerDisplay.textContent = formatTime(timeLeft);
+
+            // --- Lógica del avance automático de la lectura (1:30) ---
+            const timeElapsed = TOTAL_TIME_SECONDS - timeLeft;
+            if (currentSection === 'reading' && timeElapsed >= READING_TIME_SECONDS) {
+                clearInterval(timer);
+                alert("¡Tiempo de lectura (1:30) finalizado! Ahora debes responder las preguntas.");
+                
+                // Forzar avance al inicio de las preguntas de Comprensión
+                currentSection = 'comprehension';
+                currentQuestionIndex = 0;
+                document.getElementById('welcomeMessage').textContent = 'Responde las 5 preguntas de Comprensión Lectora.';
+                showSection('comprehensionSection');
+                renderQuestion(comprehensionQuestions[currentQuestionIndex], 'comprehension');
+                
+                // Continuar el temporizador para el tiempo restante de evaluación
+                startTimer();
+                return;
+            }
+
+            // Cambiar color cuando quedan 3 minutos o menos (180 segundos)
+            if (timeLeft <= 180) {
+                timerDisplay.style.color = '#ef4444'; // Rojo
+            } else {
+                 timerDisplay.style.color = '#1e293b'; 
+            }
+
+        }, 1000);
+    }
+
+    // --- FUNCIONES DE ESTILO Y CONFIGURACIÓN ---
+
+    function applyConfig(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+
+      const backgroundColor = config.background_color || defaultConfig.background_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+      document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.body.style.backgroundColor = backgroundColor;
+      document.body.style.color = textColor;
+
+      const platformTitleEl = document.getElementById('platformTitle');
+      if (platformTitleEl) {
+          platformTitleEl.textContent = config.platform_title || defaultConfig.platform_title;
+          platformTitleEl.style.fontSize = `${baseSize * 2}px`;
+          platformTitleEl.style.color = textColor;
+      }
+
+      const welcomeMessageEl = document.getElementById('welcomeMessage');
+      if (welcomeMessageEl) {
+          welcomeMessageEl.textContent = config.welcome_message || defaultConfig.welcome_message;
+          welcomeMessageEl.style.fontSize = `${baseSize}px`;
+          welcomeMessageEl.style.color = textColor;
+      }
+      
+
+      const readingTitleEl = document.getElementById('readingTitle');
+      if (readingTitleEl) {
+          readingTitleEl.textContent = config.reading_title || defaultConfig.reading_title;
+          readingTitleEl.style.fontSize = `${baseSize * 1.5}px`;
+          readingTitleEl.style.color = textColor;
+      }
+      
+      const synonymsSectionTitleEl = document.getElementById('synonymsSectionTitle');
+      if (synonymsSectionTitleEl) {
+          synonymsSectionTitleEl.textContent = config.synonyms_section_title || defaultConfig.synonyms_section_title;
+          synonymsSectionTitleEl.style.fontSize = `${baseSize * 1.625}px`;
+          synonymsSectionTitleEl.style.color = textColor;
+      }
+
+
+      const panels = document.querySelectorAll('.reading-panel, .question-card, .progress-section, .results-summary, .login-section');
+      panels.forEach(panel => {
+        panel.style.backgroundColor = surfaceColor;
+      });
+
+      document.querySelectorAll('.reading-text').forEach(text => {
+        text.style.color = textColor;
+      });
+
+      document.querySelectorAll('.nav-button:not(.secondary)').forEach(btn => {
+        btn.style.backgroundColor = primaryColor;
+        btn.style.color = surfaceColor;
+      });
+
+      document.querySelectorAll('.nav-button.secondary').forEach(btn => {
+        btn.style.color = secondaryColor;
+        btn.style.borderColor = secondaryColor;
+        btn.style.backgroundColor = surfaceColor;
+      });
+
+      const progressBarContainer = document.getElementById('progressBarContainer');
+      const progressBar = document.getElementById('progressBar');
+      if (progressBarContainer) progressBarContainer.style.backgroundColor = secondaryColor + '33';
+      if (progressBar) progressBar.style.backgroundColor = primaryColor;
+
+      document.querySelectorAll('.progress-label, .progress-stats').forEach(el => {
+        el.style.color = textColor;
+      });
+
+      document.querySelectorAll('.question-text, .panel-title, .section-title').forEach(el => {
+        el.style.color = textColor;
+      });
+
+      document.querySelectorAll('.synonym-word').forEach(el => {
+        el.style.backgroundColor = primaryColor + '22';
+        el.style.color = primaryColor;
+      });
+
+      document.querySelectorAll('.options-container .option-button').forEach(btn => {
+        if (!btn.classList.contains('selected') && !btn.disabled) {
+          btn.style.backgroundColor = surfaceColor;
+          btn.style.borderColor = secondaryColor;
+          btn.style.color = textColor;
+        }
+      });
+    }
+
+    // --- INICIALIZACIÓN Y LISTENERS ---
+
+    function checkLoginFields() {
+        const name = document.getElementById('inputName').value.trim();
+        const dni = document.getElementById('inputDNI').value.trim();
+        const button = document.getElementById('startLoginButton');
+        
+        if (name && dni) {
+            button.disabled = false;
+        } else {
+            button.disabled = true;
+        }
+    }
+
+    function setupEventListeners() {
+      // Login Check
+      document.getElementById('inputName')?.addEventListener('input', checkLoginFields);
+      document.getElementById('inputDNI')?.addEventListener('input', checkLoginFields);
+
+      // Listener para el botón de "Iniciar Sesión" (desde el login)
+      document.getElementById('startLoginButton')?.addEventListener('click', () => {
+        if (hasCompletedQuiz) {
+            alert('Ya completaste esta evaluación. No se permiten reintentos.');
+            return;
+        }
+        
+        const name = document.getElementById('inputName').value.trim();
+        const dni = document.getElementById('inputDNI').value.trim();
+
+        if (name && dni) {
+            userName = name;
+            userDNI = dni;
+            currentSection = 'reading';
+            
+            // Iniciar el temporizador al iniciar sesión
+            startTimer(); 
+
+            // Ocultar mensaje de bienvenida y mostrar progreso
+            document.getElementById('welcomeMessage').textContent = `Tienes ${formatTime(READING_TIME_SECONDS)} minutos para leer el texto. El tiempo restante para las preguntas es de ${formatTime(EVALUATION_TIME_SECONDS)}.`;
+            document.getElementById('progressSection').style.display = 'block';
+            showSection('readingSection');
+        } else {
+            alert('Por favor, ingresa tu Nombre y DNI para comenzar.');
+        }
+      });
+
+      // Listener para el botón de "Comenzar Evaluación" (desde la lectura)
+      document.getElementById('startButton')?.addEventListener('click', () => {
+        if (hasCompletedQuiz) {
+            alert('Ya completaste esta evaluación. No se permiten reintentos.');
+            return;
+        }
+        
+        if (timeLeft <= 0) {
+            alert("El tiempo ha expirado. No puedes iniciar la evaluación.");
+            showResults(true);
+            return;
+        }
+
+        // Si el usuario hace click antes de que el tiempo de lectura se acabe,
+        // cancelamos la lógica de avance automático y avanzamos manualmente.
+        if (currentSection === 'reading') {
+            clearInterval(timer);
+            startTimer(); // Reinicia el timer para el tiempo restante de evaluación
+        }
+
+        currentSection = 'comprehension';
+        currentQuestionIndex = 0;
+        document.getElementById('welcomeMessage').textContent = 'Responde las 5 preguntas de Comprensión Lectora.';
+        showSection('comprehensionSection');
+        renderQuestion(comprehensionQuestions[currentQuestionIndex], 'comprehension');
+      });
+      
+      // Listener para el botón de "Comenzar" Sinónimos
+      document.getElementById('startSynonymsButton')?.addEventListener('click', () => {
+        currentSection = 'synonyms';
+        currentQuestionIndex = 0;
+        document.getElementById('welcomeMessage').textContent = 'Responde las 10 preguntas de Sinónimos.';
+        showSection('synonymsSection');
+        renderQuestion(synonymQuestions[currentQuestionIndex], 'synonyms');
+      });
+
+      // El botón de reset (solo para desarrollo/pruebas)
+      document.getElementById('resetButton')?.addEventListener('click', resetQuiz);
+      
+      document.getElementById('downloadButton')?.addEventListener('click', downloadExcel);
+    }
+
+    function initializeApp() {
+      applyConfig(defaultConfig); 
+      
+      // Mostrar tiempo inicial
+      document.getElementById('timerDisplay').textContent = formatTime(TOTAL_TIME_SECONDS);
+      
+      if (window.dataSdk) {
+        window.dataSdk.init(dataHandler)
+          .then(initResult => {
+            if (!initResult.isOk) {
+              console.error("Error initializing data SDK");
+            }
+          })
+          .catch(error => console.error("Error during dataSdk init:", error));
+      } else {
+        console.warn("dataSdk not available. Data saving will be disabled.");
+      }
+
+      updateProgress();
+
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: (config) => {
+            applyConfig(config);
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.background_color = value;
+                    window.elementSdk.setConfig({ background_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.surface_color = value;
+                    window.elementSdk.setConfig({ surface_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.text_color = value;
+                    window.elementSdk.setConfig({ text_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.primary_action_color = value;
+                    window.elementSdk.setConfig({ primary_action_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.config.secondary_action_color = value;
+                    window.elementSdk.setConfig({ secondary_action_color: value });
+                  }
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => {
+                if (window.elementSdk) {
+                  window.elementSdk.config.font_family = value;
+                  window.elementSdk.setConfig({ font_family: value });
+                }
+              }
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => {
+                if (window.elementSdk) {
+                  window.elementSdk.config.font_size = value;
+                  window.elementSdk.setConfig({ font_size: value });
+                }
+              }
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["platform_title", config.platform_title || defaultConfig.platform_title],
+            ["welcome_message", config.welcome_message || defaultConfig.welcome_message],
+            ["reading_title", config.reading_title || defaultConfig.reading_title],
+            ["synonyms_section_title", config.synonyms_section_title || defaultConfig.synonyms_section_title],
+            ["button_text", config.button_text || defaultConfig.button_text]
+          ])
+        });
+      } else {
+        console.warn("elementSdk not available. Customization will be disabled.");
+      }
+      
+      setupEventListeners(); 
+    }
+
+    // --- LÓGICA DE QUIZ ---
+    function showSection(sectionId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(sectionId).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderQuestion(question, type) {
+      if (hasCompletedQuiz) {
+          showResults();
+          return;
+      }
+      
+      const container = document.getElementById(type === 'comprehension' ? 'comprehensionSection' : 'synonymsSection');
+      const totalQuestions = comprehensionQuestions.length + synonymQuestions.length;
+      const questionNum = (type === 'comprehension') 
+                           ? (currentQuestionIndex + 1)
+                           : (comprehensionQuestions.length + currentQuestionIndex + 1);
+      
+      if (timeLeft <= 0) {
+          showResults(true);
+          return;
+      }
+
+      const config = window.elementSdk && window.elementSdk.config ? window.elementSdk.config : defaultConfig;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+
+      // 1. Aleatorizar las opciones
+      const shuffledOptions = shuffleArray([...question.options]);
+
+      // 2. Determinar si se debe mostrar el botón Siguiente
+      const isComprehension = type === 'comprehension';
+      
+      const showNextButton = isComprehension;
+      const nextButtonHtml = showNextButton 
+        ? `<button class="nav-button" id="nextButton" disabled>Siguiente</button>` 
+        : ''; 
+
+      container.innerHTML = `
+        <div class="question-card">
+          <div class="question-number">Pregunta ${questionNum} de ${totalQuestions}</div>
+          ${type === 'synonyms' ? `<div style="text-align: center; margin-bottom: 20px;"><span class="synonym-word">${question.word}</span></div>` : ''}
+          <div class="question-text">${question.text}</div>
+          <div class="options-container" id="optionsContainer">
+            ${shuffledOptions.map((option, index) => `
+              <button class="option-button" data-option-text="${option}" style="background-color: ${surfaceColor}; border-color: ${secondaryColor}; color: ${textColor};">
+                ${option}
+              </button>
+            `).join('')}
+          </div>
+          <div class="feedback-message" id="feedbackMessage"></div>
+          <div class="button-group">
+            <button class="nav-button secondary" id="backButton" style="display: none;">Anterior</button>
+            ${nextButtonHtml}
+          </div>
+        </div>
+      `;
+      
+      // 3. Vincular los listeners a las nuevas opciones
+      const optionButtons = container.querySelectorAll('.option-button');
+      optionButtons.forEach(button => {
+        const optionText = button.getAttribute('data-option-text');
+        button.onclick = () => selectOption(question.id, optionText, button, question.correctAnswer, question.options);
+      });
+
+      const nextBtn = container.querySelector('#nextButton');
+      if (nextBtn) {
+        nextBtn.onclick = nextQuestion;
+      }
+      applyConfig(config); 
+    }
+
+    function selectOption(questionId, optionText, button, correctAnswer, originalOptions) {
+      if (timeLeft <= 0 || hasCompletedQuiz) return;
+      
+      const card = button.closest('.question-card');
+      const buttons = card.querySelectorAll('.option-button');
+      const feedback = document.getElementById('feedbackMessage');
+      const nextButton = document.getElementById('nextButton');
+
+      const config = window.elementSdk && window.elementSdk.config ? window.elementSdk.config : defaultConfig;
+      const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+
+      buttons.forEach(btn => {
+        btn.classList.remove('selected');
+        btn.style.backgroundColor = surfaceColor;
+        btn.style.borderColor = secondaryColor;
+        btn.style.color = textColor;
+        btn.disabled = true;
+      });
+
+      const isCorrect = optionText === correctAnswer;
+
+      userAnswers[questionId] = {
+        answerText: optionText, 
+        correctAnswer: correctAnswer,
+        is_correct: isCorrect
+      };
+
+      button.classList.add('selected');
+      button.style.backgroundColor = isCorrect ? '#10b981' : '#ef4444';
+      button.style.borderColor = isCorrect ? '#10b981' : '#ef4444';
+      button.style.color = '#ffffff';
+
+      if (!isCorrect) {
+          const correctButton = Array.from(buttons).find(btn => btn.getAttribute('data-option-text') === correctAnswer);
+          if (correctButton) {
+              correctButton.style.backgroundColor = '#10b981';
+              correctButton.style.borderColor = '#10b981';
+              correctButton.style.color = '#ffffff';
+          }
+      }
+
+      feedback.classList.add('show', isCorrect ? 'correct' : 'incorrect');
+      feedback.textContent = isCorrect 
+        ? '✓ ¡Correcto! Excelente.' 
+        : '✗ Incorrecto. La respuesta correcta está marcada en verde.';
+
+      if (nextButton) {
+        nextButton.disabled = false;
+      }
+      
+      updateProgress();
+      
+      if (window.dataSdk) {
+        const originalIndex = originalOptions.findIndex(opt => opt === optionText);
+        saveAnswer(questionId, originalIndex, isCorrect);
+      } else {
+        console.warn("dataSdk not available, skipping saveAnswer.");
+      }
+
+      // Auto-avanzar si es la sección de Sinónimos
+      if (currentSection === 'synonyms') {
+        setTimeout(() => {
+          nextQuestion();
+        }, 1500);
+      }
+    }
+
+    async function saveAnswer(questionId, answerIndex, isCorrect) {
+      if (!window.dataSdk || recordCount >= 999) return;
+
+      const questions = currentSection === 'comprehension' ? comprehensionQuestions : synonymQuestions;
+      const question = questions.find(q => q.id === questionId);
+
+      const originalOption = question.options[answerIndex]; 
+
+      const result = await window.dataSdk.create({
+        id: `${Date.now()}-${questionId}`,
+        text_id: "el-misterio-del-monolito-azul", // ID del texto actualizado
+        question_id: questionId,
+        user_answer: originalOption, 
+        is_correct: isCorrect,
+        section: currentSection,
+        timestamp: new Date().toISOString()
+      });
+
+      if (!result.isOk) {
+        console.error("Error saving answer");
+      }
+    }
+
+    function nextQuestion() {
+      if (timeLeft <= 0) {
+        showResults(true);
+        return;
+      }
+      
+      if (currentSection === 'comprehension') {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < comprehensionQuestions.length) {
+          renderQuestion(comprehensionQuestions[currentQuestionIndex], 'comprehension');
+        } else {
+          // Si termina comprensión, avanza a la introducción de sinónimos
+          showSection('synonymsIntro');
+        }
+      } else {
+        // Lógica para Sinónimos
+        currentQuestionIndex++;
+        if (currentQuestionIndex < synonymQuestions.length) {
+          renderQuestion(synonymQuestions[currentQuestionIndex], 'synonyms');
+        } else {
+          showResults();
+        }
+      }
+    }
+
+    function updateProgress() {
+      const answered = Object.keys(userAnswers).length;
+      const total = comprehensionQuestions.length + synonymQuestions.length; // Total 15 preguntas
+      const percentage = (answered / total) * 100;
+
+      const progressStats = document.getElementById('progressStats');
+      const progressBar = document.getElementById('progressBar');
+      
+      if (progressStats) progressStats.textContent = `${answered} de ${total} completadas`;
+      if (progressBar) progressBar.style.width = `${percentage}%`;
+    }
+
+    function showResults(timeExpired = false) {
+      clearInterval(timer); // Detener el temporizador
+      hasCompletedQuiz = true; // Marcar como completado
+      showSection('resultsSection');
+
+      const comprehensionCorrect = comprehensionQuestions.filter(q => userAnswers[q.id]?.is_correct).length;
+      const synonymsCorrect = synonymQuestions.filter(q => userAnswers[q.id]?.is_correct).length;
+      const totalCorrect = comprehensionCorrect + synonymsCorrect;
+      const totalQuestions = comprehensionQuestions.length + synonymQuestions.length;
+      
+      // Cálculo de porcentajes independientes
+      const compPercentage = Math.round((comprehensionCorrect / comprehensionQuestions.length) * 100);
+      const synPercentage = Math.round((synonymsCorrect / synonymQuestions.length) * 100);
+      const totalPercentage = Math.round((totalCorrect / totalQuestions) * 100);
+
+      const resultsSummary = document.getElementById('resultsSummary');
+      const config = window.elementSdk && window.elementSdk.config ? window.elementSdk.config : defaultConfig;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+
+      let message = '';
+      if (totalPercentage === 100) {
+        message = '¡Perfecto! Tienes una comprensión lectora excepcional y un vocabulario excelente. 🚀';
+      } else if (totalPercentage >= 80) {
+        message = '¡Muy bien! Demuestras una excelente comprensión del texto y buen dominio del vocabulario. 👏';
+      } else if (totalPercentage >= 60) {
+        message = 'Buen trabajo. Sigue practicando para mejorar tu comprensión y vocabulario. 📚';
+      } else {
+        message = 'Necesitas practicar más. Lee con calma y presta atención a los detalles y al significado de las palabras. 💪';
+      }
+      
+      // Mostrar si se acabó el tiempo
+      let finalTitle = '¡Evaluación Completada!';
+      if (timeExpired) {
+          finalTitle = '¡Tiempo Agotado!';
+          message = 'El tiempo límite ha expirado. Tus resultados han sido registrados. ' + message;
+      }
+
+
+      // Reconstruir el contenido de resultsSummary para incluir el nombre del usuario y notas separadas
+      resultsSummary.innerHTML = `
+        <h3 class="results-title">${finalTitle}</h3>
+        <p style="font-size: 24px; font-weight: 700; margin-bottom: 24px; color: ${textColor}; text-transform: uppercase; line-height: 1.2;" id="userNameDisplay">${userName}</p>
+        
+        <h4 style="font-size: 20px; font-weight: 600; margin-top: 10px;">Puntuación Total:</h4>
+        <div class="results-score" id="resultsScore">
+         ${totalPercentage}%
+        </div>
+        
+        <div class="results-breakdown">
+         <div class="result-item">
+          <div class="result-item-value" id="comprehensionScore">
+           ${comprehensionCorrect}/${comprehensionQuestions.length}
+          </div>
+          <div class="result-item-label">
+           Comprensión
+          </div>
+          <div class="section-score" style="color: ${primaryColor};">
+           ${compPercentage}%
+          </div>
+         </div>
+         <div class="result-item">
+          <div class="result-item-value" id="synonymsScore">
+           ${synonymsCorrect}/${synonymQuestions.length}
+          </div>
+          <div class="result-item-label">
+           Sinónimos
+          </div>
+          <div class="section-score" style="color: ${primaryColor};">
+           ${synPercentage}%
+          </div>
+         </div>
+        </div>
+        <p class="results-message" id="resultsMessage">${message}</p>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button class="reset-button" id="downloadButton" style="background-color: #10b981; color: white; border: none;">📥 Descargar Excel</button>
+        </div>
+      `;
+
+      // Re-aplicar estilos dinámicos a elementos recién creados/actualizados
+      document.getElementById('resultsScore').style.color = primaryColor;
+      document.querySelectorAll('.result-item-value, .section-score').forEach(el => {
+        el.style.color = primaryColor;
+      });
+      
+      // Re-vincular SÓLO el botón de "Descargar Excel"
+      document.getElementById('downloadButton').addEventListener('click', downloadExcel);
+    }
+
+    // Nota: El resetQuiz ya no se usa para reintentar, solo para restablecer variables de desarrollo.
+    function resetQuiz() {
+      clearInterval(timer); 
+      hasCompletedQuiz = false; 
+      userAnswers = {};
+      currentQuestionIndex = 0;
+      currentSection = 'login';
+      showSection('loginSection');
+      updateProgress();
+      
+      document.getElementById('inputName').value = '';
+      document.getElementById('inputDNI').value = '';
+      document.getElementById('startLoginButton').disabled = true;
+      document.getElementById('progressSection').style.display = 'none';
+      document.getElementById('welcomeMessage').textContent = 'Ingresa tus datos para comenzar la prueba';
+      
+      document.getElementById('timerDisplay').textContent = formatTime(TOTAL_TIME_SECONDS);
+      timeLeft = TOTAL_TIME_SECONDS;
+    }
+
+    /**
+     * Descarga los resultados en formato CSV con punto y coma (;) como delimitador 
+     * incluyendo el Nombre y DNI del usuario.
+     */
+    function downloadExcel() {
+      try {
+        const allQuestions = [...comprehensionQuestions, ...synonymQuestions];
+        
+        let csvContent = '\ufeff'; // BOM para Excel UTF-8
+        
+        // Encabezados con punto y coma (AGREGANDO NOMBRE Y DNI)
+        csvContent += `Nombre${CSV_DELIMITER}DNI${CSV_DELIMITER}Seccion${CSV_DELIMITER}Num. Pregunta${CSV_DELIMITER}Pregunta${CSV_DELIMITER}Respuesta del Usuario${CSV_DELIMITER}Respuesta Correcta${CSV_DELIMITER}Estado\n`;
+        
+        // Función para escapar texto, manteniendo el delimitador seguro
+        const escapeCsv = (text) => `"${(text || '').toString().replace(/"/g, '""')}"`;
+        
+        // Escapar los datos del usuario una sola vez
+        const escapedUserName = escapeCsv(userName);
+        const escapedUserDNI = escapeCsv(userDNI);
+
+        allQuestions.forEach((question, index) => {
+          const section = index < comprehensionQuestions.length ? 'Comprension Lectora' : 'Sinonimos';
+          // El número de pregunta dentro de su sección (1-5 para Comprensión, 1-10 para Sinónimos)
+          const questionNumber = index < comprehensionQuestions.length ? (index % comprehensionQuestions.length) + 1 : (index - comprehensionQuestions.length) + 1;
+          const userAnswer = userAnswers[question.id];
+          
+          if (userAnswer) {
+            // Usamos las propiedades guardadas en userAnswers
+            const userAnswerText = userAnswer.answerText;
+            const correctAnswerText = userAnswer.correctAnswer;
+            const status = userAnswer.is_correct ? 'Correcta' : 'Incorrecta';
+            
+            // Construir la fila, incluyendo Nombre y DNI
+            csvContent += `${escapedUserName}${CSV_DELIMITER}`;
+            csvContent += `${escapedUserDNI}${CSV_DELIMITER}`;
+            csvContent += `${escapeCsv(section)}${CSV_DELIMITER}`;
+            csvContent += `${questionNumber}${CSV_DELIMITER}`;
+            csvContent += `${escapeCsv(question.text)}${CSV_DELIMITER}`;
+            csvContent += `${escapeCsv(userAnswerText)}${CSV_DELIMITER}`;
+            csvContent += `${escapeCsv(correctAnswerText)}${CSV_DELIMITER}`;
+            csvContent += `${escapeCsv(status)}\n`;
+          }
+        });
+        
+        csvContent += '\n';
+        csvContent += `RESUMEN DE RESULTADOS\n`;
+        
+        const comprehensionCorrect = comprehensionQuestions.filter(q => userAnswers[q.id]?.is_correct).length;
+        const synonymsCorrect = synonymQuestions.filter(q => userAnswers[q.id]?.is_correct).length;
+        const totalCorrect = comprehensionCorrect + synonymsCorrect;
+        const totalQuestions = comprehensionQuestions.length + synonymQuestions.length;
+        const totalPercentage = Math.round((totalCorrect / totalQuestions) * 100);
+        
+        // Cálculo de porcentajes independientes para el reporte
+        const compPercentage = Math.round((comprehensionCorrect / comprehensionQuestions.length) * 100);
+        const synPercentage = Math.round((synonymsCorrect / synonymQuestions.length) * 100);
+
+        // Filas del resumen
+        csvContent += `${escapeCsv("Puntuación Total")}${CSV_DELIMITER}${escapeCsv(`${totalCorrect}/${totalQuestions}`)}${CSV_DELIMITER}${escapeCsv(`${totalPercentage}%`)}\n`;
+        csvContent += `${escapeCsv("Comprension Lectora")}${CSV_DELIMITER}${escapeCsv(`${comprehensionCorrect}/${comprehensionQuestions.length}`)}${CSV_DELIMITER}${escapeCsv(`${compPercentage}%`)}\n`;
+        csvContent += `${escapeCsv("Sinonimos")}${CSV_DELIMITER}${escapeCsv(`${synonymsCorrect}/${synonymQuestions.length}`)}${CSV_DELIMITER}${escapeCsv(`${synPercentage}%`)}\n`;
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        
+        if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+          window.navigator.msSaveOrOpenBlob(blob, `resultados_evaluacion_${userDNI || 'sin_dni'}_${new Date().toISOString().split('T')[0]}.csv`);
+        } else {
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          
+          link.style.display = 'none';
+          link.href = url;
+          link.download = `resultados_evaluacion_${userDNI || 'sin_dni'}_${new Date().toISOString().split('T')[0]}.csv`;
+          
+          document.body.appendChild(link);
+          link.click();
+          
+          setTimeout(() => {
+            if (document.body.contains(link)) {
+              document.body.removeChild(link);
+            }
+            URL.revokeObjectURL(url);
+          }, 200);
+        }
+      } catch (error) {
+        const resultsSummary = document.getElementById('resultsSummary');
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = 'margin-top: 20px; padding: 12px; background-color: #fee2e2; color: #991b1b; border-radius: 8px; font-size: 14px;';
+        errorMsg.textContent = '❌ Error al descargar el archivo. Por favor, intenta de nuevo.';
+        resultsSummary.appendChild(errorMsg);
+        
+        setTimeout(() => {
+          if (resultsSummary.contains(errorMsg)) {
+            resultsSummary.removeChild(errorMsg);
+          }
+        }, 3000);
+      }
+    }
+
+    initializeApp();
+  </script>
+ </body>
+</html>
